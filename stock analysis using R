@@ -1,0 +1,34 @@
+library(quantmod)
+library(TTR)
+
+# Define stock symbols and date range
+symbols <- c("AAPL", "MSFT", "GOOGL")
+start_date <- "2022-01-01"
+end_date <- Sys.Date()
+
+# Create an empty list to store data
+stock_data_list <- list()
+
+# Loop through each symbol and fetch data
+for (symbol in symbols) {
+  # Fetch data
+  getSymbols(symbol, src = "yahoo", from = start_date, to = end_date)
+  
+  # Calculate Bollinger Bands
+  assign(paste0(symbol, "_bbands"), BBands(Cl(get(symbol)), maType = "SMA", draw = FALSE))
+  
+  # Add data to the list
+  stock_data_list[[symbol]] <- get(symbol)
+}
+
+# Combine the data into a single data frame
+stock_data <- do.call(cbind, stock_data_list)
+
+# Plot using chartSeries
+chartSeries(stock_data)
+
+# Add Bollinger Bands for each stock with different colors
+colors <- c("blue", "green", "red")
+for (i in seq_along(symbols)) {
+  addBBands(n = 20, sd = 2, maType = 'SMA', col = colors[i], on = i)
+}
